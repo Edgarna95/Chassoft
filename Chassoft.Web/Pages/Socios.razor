@@ -1,0 +1,158 @@
+@page "/socios"
+@inject SocioService SocioSvc
+
+<PageTitle>Socios</PageTitle>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Socios</h2>
+        <button class="btn btn-primary" @onclick="MostrarFormulario">+ Nuevo socio</button>
+    </div>
+
+    @if (_mostrarForm)
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-header"><strong>Nuevo socio</strong></div>
+            <div class="card-body">
+                <EditForm Model="_request" OnValidSubmit="GuardarAsync">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="alert alert-danger" />
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre completo *</label>
+                            <InputText class="form-control" @bind-Value="_request.NombreCompleto" placeholder="Ej: Juan Pérez" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">DNI *</label>
+                            <InputText class="form-control" @bind-Value="_request.Dni" placeholder="Ej: 30123456" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Correo electrónico (opcional)</label>
+                            <InputText class="form-control" @bind-Value="_request.Email" />
+                        </div>
+                    </div>
+
+                    <div class="mt-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-success" disabled="@_guardando">
+                            @(_guardando ? "Guardando…" : "Guardar")
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" @onclick="CancelarFormulario">Cancelar</button>
+                    </div>
+                </EditForm>
+
+                @if (_errorMensaje is not null)
+                {
+                    <div class="alert alert-danger mt-2">@_errorMensaje</div>
+                }
+            </div>
+        </div>
+    }
+
+    @if (!_mostrarForm && _errorMensaje is not null)
+    {
+        <div class="alert alert-danger">@_errorMensaje</div>
+    }
+    @if (_cargando)
+    {
+        <p class="text-muted"><em>Cargando socios…</em></p>
+    }
+    else if (_socios is null || _socios.Count == 0)
+    {
+        <div class="alert alert-info">No hay socios registrados todavía.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nombre completo</th>
+                        <th>DNI</th>
+                        <th>Correo</th>
+                        <th>Fecha de alta</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in _socios)
+                    {
+                        <tr>
+                            <td><strong>@s.NombreCompleto</strong></td>
+                            <td><code>@s.Dni</code></td>
+                            <td>@(s.Email ?? "—")</td>
+                            <td>@s.FechaAlta.ToShortDateString()</td>
+                            <td>
+                                @if (s.Activo)
+                                {
+                                    <span class="badge bg-success">Activo</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Baja</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    private List<SocioDto>? _socios;
+    private CrearSocioRequest _request = new();
+    private bool _cargando = true;
+    private bool _mostrarForm = false;
+    private bool _guardando = false;
+    private string? _errorMensaje;
+
+    protected override async Task OnInitializedAsync()
+        => await CargarAsync();
+
+    private async Task CargarAsync()
+    {
+        _cargando = true;
+        try { _socios = await SocioSvc.ObtenerTodosAsync(); }
+        catch (HttpRequestException) { _errorMensaje = "No se pudo cargar el listado. Revisá que la API y la base estén disponibles."; }
+        finally { _cargando = false; }
+    }
+
+    private void MostrarFormulario()
+    {
+        _request = new();
+        _errorMensaje = null;
+        _mostrarForm = true;
+    }
+
+    private void CancelarFormulario()
+    {
+        _mostrarForm = false;
+        _errorMensaje = null;
+    }
+
+    private async Task GuardarAsync()
+    {
+        _guardando = true;
+        _errorMensaje = null;
+        try
+        {
+            var ok = await SocioSvc.CrearAsync(_request);
+            if (ok)
+            {
+                _mostrarForm = false;
+                await CargarAsync();
+            }
+            else
+            {
+                _errorMensaje = "No se pudo guardar el socio. Verificá los datos e intentá de nuevo.";
+            }
+        }
+        catch (HttpRequestException ex) { _errorMensaje = ex.Message; }
+        finally
+        {
+            _guardando = false;
+        }
+    }
+}

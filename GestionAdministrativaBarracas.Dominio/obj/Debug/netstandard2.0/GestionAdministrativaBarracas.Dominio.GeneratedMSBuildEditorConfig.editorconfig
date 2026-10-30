@@ -1,8 +1,0 @@
-is_global = true
-build_property.RootNamespace = GestionAdministrativaBarracas.Dominio
-build_property.ProjectDir = C:\Users\Edgar\Desktop\GestionAdministrativaBarracas\GestionAdministrativaBarracas.Dominio\
-build_property.EnableComHosting = 
-build_property.EnableGeneratedComInterfaceComImportInterop = 
-build_property.CsWinRTUseWindowsUIXamlProjections = false
-build_property.EffectiveAnalysisLevelStyle = 
-build_property.EnableCodeStyleSeverity = 

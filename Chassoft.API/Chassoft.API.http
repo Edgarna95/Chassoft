@@ -1,0 +1,12 @@
+@Chassoft_API_HostAddress = https://localhost:7000
+
+GET {{Chassoft_API_HostAddress}}/api/proveedor
+Accept: application/json
+
+###
+GET {{Chassoft_API_HostAddress}}/api/socio
+Accept: application/json
+
+###
+GET {{Chassoft_API_HostAddress}}/api/operacion/tarifa-cuota
+Accept: application/json

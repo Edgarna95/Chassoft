@@ -1,0 +1,22 @@
+name: Build y pruebas
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+      - run: dotnet restore Chassoft.sln
+      - run: dotnet build Chassoft.sln --no-restore --configuration Release
+      - run: dotnet test Chassoft.Tests/Chassoft.Tests.csproj --no-build --configuration Release --logger trx
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: resultados-pruebas
+          path: '**/TestResults/*.trx'

@@ -1,0 +1,15 @@
+.vs/
+**/bin/
+**/obj/
+**/packages/
+**/TestResults/
+**/*.user
+**/*.suo
+/*.zip
+**/appsettings.*.local.json
+.env
+.env.*
+!.env.example
+*.mdf
+*.ldf
+*.bak

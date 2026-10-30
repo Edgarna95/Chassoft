@@ -1,0 +1,181 @@
+@page "/proveedores"
+@inject ProveedorService ProveedorSvc
+
+<PageTitle>Proveedores</PageTitle>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Proveedores</h2>
+        <button class="btn btn-primary" @onclick="MostrarFormulario">+ Nuevo proveedor</button>
+    </div>
+
+    @if (_mostrarForm)
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-header"><strong>@(_editando ? "Editar" : "Nuevo") proveedor</strong></div>
+            <div class="card-body">
+                <EditForm Model="_request" OnValidSubmit="GuardarAsync">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="alert alert-danger" />
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre comercial *</label>
+                            <InputText class="form-control" @bind-Value="_request.Nombre" placeholder="Ej: Distribuidora El Sol" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">CUIT *</label>
+                            <InputText class="form-control" @bind-Value="_request.Cuit" placeholder="Ej: 30-12345678-9" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Razón social</label>
+                            <InputText class="form-control" @bind-Value="_request.RazonSocial" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Condición IVA</label>
+                            <InputText class="form-control" @bind-Value="_request.CondicionIVA" placeholder="Ej: Responsable Inscripto" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Teléfono</label>
+                            <InputText class="form-control" @bind-Value="_request.TelefonoDeContacto" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Correo electrónico</label>
+                            <InputText class="form-control" @bind-Value="_request.CorreoDeContacto" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">CBU asociado</label>
+                            <InputText class="form-control" @bind-Value="_request.CbuAsociado" />
+                        </div>
+                    </div>
+
+                    <div class="mt-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-success" disabled="@_guardando">
+                            @(_guardando ? "Guardando…" : "Guardar")
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" @onclick="CancelarFormulario">Cancelar</button>
+                    </div>
+                </EditForm>
+
+                @if (_errorMensaje is not null)
+                {
+                    <div class="alert alert-danger mt-2">@_errorMensaje</div>
+                }
+            </div>
+        </div>
+    }
+
+    @if (!_mostrarForm && _errorMensaje is not null)
+    {
+        <div class="alert alert-danger">@_errorMensaje</div>
+    }
+    @if (_cargando)
+    {
+        <p class="text-muted"><em>Cargando proveedores…</em></p>
+    }
+    else if (_proveedores is null || _proveedores.Count == 0)
+    {
+        <div class="alert alert-info">No hay proveedores registrados todavía.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>CUIT</th>
+                        <th>Razón social</th>
+                        <th>Condición IVA</th>
+                        <th>Teléfono</th>
+                        <th>Correo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in _proveedores)
+                    {
+                        <tr>
+                            <td><strong>@p.Nombre</strong></td>
+                            <td><code>@p.Cuit</code></td>
+                            <td>@(p.RazonSocial ?? "—")</td>
+                            <td>@(p.CondicionIVA ?? "—")</td>
+                            <td>@(p.TelefonoDeContacto ?? "—")</td>
+                            <td>@(p.CorreoDeContacto ?? "—")</td>
+                            <td><button class="btn btn-sm btn-outline-primary" @onclick="() => Editar(p)">Editar</button></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    private List<ProveedorDto>? _proveedores;
+    private CrearProveedorRequest _request = new();
+    private bool _cargando = true;
+    private bool _mostrarForm = false;
+    private bool _editando = false;
+    private int _idEditando;
+    private bool _guardando = false;
+    private string? _errorMensaje;
+
+    protected override async Task OnInitializedAsync()
+        => await CargarAsync();
+
+    private async Task CargarAsync()
+    {
+        _cargando = true;
+        try { _proveedores = await ProveedorSvc.ObtenerTodosAsync(); }
+        catch (HttpRequestException) { _errorMensaje = "No se pudo cargar el listado. Revisá que la API y la base estén disponibles."; }
+        finally { _cargando = false; }
+    }
+
+    private void MostrarFormulario()
+    {
+        _request = new();
+        _errorMensaje = null;
+        _mostrarForm = true;
+        _editando = false;
+    }
+
+    private void Editar(ProveedorDto p)
+    {
+        _idEditando = p.Id; _editando = true; _mostrarForm = true; _errorMensaje = null;
+        _request = new() { Nombre = p.Nombre, Cuit = p.Cuit, RazonSocial = p.RazonSocial,
+            TelefonoDeContacto = p.TelefonoDeContacto, CorreoDeContacto = p.CorreoDeContacto,
+            CondicionIVA = p.CondicionIVA, CbuAsociado = p.CbuAsociado };
+    }
+
+    private void CancelarFormulario()
+    {
+        _mostrarForm = false;
+        _errorMensaje = null;
+    }
+
+    private async Task GuardarAsync()
+    {
+        _guardando = true;
+        _errorMensaje = null;
+        try
+        {
+            if (_editando) await ProveedorSvc.ActualizarAsync(_idEditando, _request);
+            var resultado = _editando ? new ProveedorDto() : await ProveedorSvc.CrearAsync(_request);
+            if (resultado is not null)
+            {
+                _mostrarForm = false;
+                await CargarAsync();
+            }
+            else
+            {
+                _errorMensaje = "No se pudo guardar el proveedor. Verificá los datos e intentá de nuevo.";
+            }
+        }
+        catch (HttpRequestException ex) { _errorMensaje = ex.Message; }
+        finally
+        {
+            _guardando = false;
+        }
+    }
+}

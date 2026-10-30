@@ -1,0 +1,134 @@
+@page "/operaciones"
+@inject OperacionService OperacionSvc
+@inject SocioService Socios
+@inject ProveedorService Proveedores
+<PageTitle>Operaciones</PageTitle>
+<div class="container mt-4">
+<h2>Cobros y pagos</h2>
+@if (_error is not null) { <div class="alert alert-danger" role="alert">@_error</div> }
+@if (_mensaje is not null) { <div class="alert alert-success" role="status">@_mensaje</div> }
+@if (_cargando) { <p>Cargando datos…</p> }
+else if (!_disponible) { <button class="btn btn-outline-primary" @onclick="CargarAsync">Reintentar</button> }
+else
+{
+    <form @onsubmit="GuardarAsync" @onsubmit:preventDefault="true" class="card card-body mb-4">
+    <fieldset disabled="@_guardando">
+    <div class="row g-3">
+        <div class="col-md-6"><label class="form-label" for="clase">Movimiento</label>
+            <select id="clase" class="form-select" @bind="_clase">
+                <option value="cuotas">Cobro de cuotas</option><option value="ingreso">Donación</option><option value="egreso">Egreso</option>
+            </select>
+        </div>
+        <div class="col-md-6"><label class="form-label" for="empleado">Empleado que registra</label>
+            <select id="empleado" class="form-select" @bind="_empleado" required>
+                <option value="0">Seleccionar empleado</option>
+                @foreach (var e in _empleados) { <option value="@e.Id">@e.NombreCompleto</option> }
+            </select>
+        </div>
+        @if (_clase == "cuotas")
+        {
+            <div class="col-md-6"><label class="form-label" for="socio">Socio</label>
+                <select id="socio" class="form-select" @bind="_socio">
+                    <option value="0">Seleccionar socio activo</option>
+                    @foreach (var s in _socios.Where(s => s.Activo)) { <option value="@s.Id">@s.NombreCompleto (@s.Dni)</option> }
+                </select>
+            </div>
+            <div class="col-md-6"><p class="mt-4">Cuota mensual: <strong>ARS @_tarifa.ToString("N2")</strong>. Bonificaciones pendientes para una próxima versión.</p></div>
+            <div class="col-md-3"><label class="form-label" for="anio">Año</label><input id="anio" class="form-control" type="number" min="2000" max="9999" @bind="_anio" /></div>
+            <div class="col-md-3"><label class="form-label" for="mes">Mes</label><input id="mes" class="form-control" type="number" min="1" max="12" @bind="_mes" /></div>
+            <div class="col-md-6 d-flex align-items-end"><button type="button" class="btn btn-outline-primary" @onclick="AgregarPeriodo">Agregar mes al cobro</button></div>
+            <div class="col-12">
+                @foreach (var p in _periodos)
+                {
+                    <button type="button" class="btn btn-outline-secondary me-2 mb-2" title="Quitar mes" @onclick="() => _periodos.Remove(p)">@p.Mes/@p.Anio ×</button>
+                }
+                <p>Meses seleccionados: @_periodos.Count. <strong>Total: ARS @(_tarifa * _periodos.Count)</strong></p>
+                <p class="small text-muted">Se guarda un ingreso con todos los meses. Si uno ya está pagado, se rechaza el cobro completo.</p>
+            </div>
+        }
+        else
+        {
+            <div class="col-md-4"><label class="form-label" for="monto">Importe (ARS)</label><input id="monto" class="form-control" type="number" min="0.01" max="99999999.99" step="0.01" @bind="_monto" required /></div>
+            @if (_clase == "egreso")
+            {
+                <div class="col-md-4"><label class="form-label" for="proveedor">Proveedor</label>
+                    <select id="proveedor" class="form-select" @bind="_proveedor"><option value="0">Seleccionar proveedor</option>
+                        @foreach (var p in _proveedores) { <option value="@p.Id">@p.Nombre</option> }
+                    </select>
+                </div>
+                <div class="col-md-4"><label class="form-label" for="tipo">Concepto</label>
+                    <select id="tipo" class="form-select" @bind="_tipoEgreso">
+                        @for (var i = 0; i < _tipos.Length; i++) { <option value="@i">@_tipos[i]</option> }
+                    </select>
+                </div>
+            }
+        }
+        <div class="col-12"><button type="submit" class="btn btn-success">@(_guardando ? "Guardando…" : "Registrar movimiento")</button></div>
+    </div>
+    </fieldset>
+    </form>
+    <h3>Movimientos registrados</h3>
+    <div class="table-responsive"><table class="table table-hover"><thead><tr><th>Fecha</th><th>Movimiento</th><th>Concepto</th><th>Importe ARS</th></tr></thead><tbody>
+        @foreach (var o in _movimientos) { <tr><td>@o.Fecha.ToString("dd/MM/yyyy HH:mm")</td><td>@o.TipoOperacion</td><td>@o.Tipo</td><td>@o.Monto.ToString("N2")</td></tr> }
+    </tbody></table></div>
+    <p class="small text-muted">Los nuevos movimientos se guardan en UTC. Las fechas históricas se conservan como fueron registradas.</p>
+}
+</div>
+@code {
+    private bool _cargando = true, _guardando, _disponible;
+    private string? _error, _mensaje;
+    private string _clase = "cuotas";
+    private int _empleado, _socio, _proveedor, _tipoEgreso;
+    private int _anio = DateTime.Today.Year, _mes = DateTime.Today.Month;
+    private decimal _monto, _tarifa;
+    private List<PeriodoCuotaDto> _periodos = [];
+    private List<OperacionDto> _movimientos = [];
+    private List<EmpleadoDto> _empleados = [];
+    private List<SocioDto> _socios = [];
+    private List<ProveedorDto> _proveedores = [];
+    private readonly string[] _tipos = ["Servicios", "Proveedor", "Impuestos", "Sueldos", "Honorarios", "Mantenimiento", "Otros"];
+    protected override Task OnInitializedAsync() => CargarAsync();
+    private async Task CargarAsync()
+    {
+        _cargando = true; _disponible = false; _error = null;
+        try
+        {
+            _movimientos = await OperacionSvc.ObtenerAsync();
+            _empleados = await OperacionSvc.EmpleadosAsync();
+            _socios = await Socios.ObtenerTodosAsync() ?? [];
+            _proveedores = await Proveedores.ObtenerTodosAsync() ?? [];
+            _tarifa = await OperacionSvc.TarifaAsync();
+            _disponible = true;
+        }
+        catch (HttpRequestException) { _error = "No se pudo cargar el módulo. Verificá que la API esté iniciada y que las migraciones estén aplicadas."; }
+        finally { _cargando = false; }
+    }
+    private void AgregarPeriodo()
+    {
+        _error = null;
+        if (_anio < 2000 || _anio > 9999 || _mes < 1 || _mes > 12) { _error = "Indicá un año y un mes válidos."; return; }
+        if (_periodos.Any(p => p.Anio == _anio && p.Mes == _mes)) { _error = "Ese mes ya está seleccionado."; return; }
+        _periodos.Add(new() { Anio = _anio, Mes = _mes });
+    }
+    private async Task GuardarAsync()
+    {
+        if (_guardando) return;
+        _error = null; _mensaje = null;
+        if (_empleado <= 0) { _error = "Seleccioná el empleado."; return; }
+        if (_clase == "cuotas" && (_socio <= 0 || _periodos.Count == 0)) { _error = "Seleccioná el socio y agregá los meses a pagar."; return; }
+        if (_clase == "egreso" && _proveedor <= 0) { _error = "Seleccioná el proveedor."; return; }
+        _guardando = true;
+        try
+        {
+            if (_clase == "cuotas") await OperacionSvc.GuardarAsync("cuotas", new { IdSocio = _socio, IdEmpleado = _empleado, Periodos = _periodos });
+            else if (_clase == "egreso") await OperacionSvc.GuardarAsync("egreso", new { Monto = _monto, IdEmpleado = _empleado, IdProveedor = _proveedor, Tipo = _tipoEgreso });
+            else await OperacionSvc.GuardarAsync("ingreso", new { Monto = _monto, IdEmpleado = _empleado, Tipo = 2 });
+            // El POST ya fue confirmado. Un fallo del GET no debe invitar a repetir el cobro.
+            _mensaje = "Movimiento guardado correctamente."; _periodos.Clear(); _monto = 0;
+            try { _movimientos = await OperacionSvc.ObtenerAsync(); }
+            catch (HttpRequestException) { _error = "El movimiento fue guardado, pero no pudo actualizarse el listado. No repitas el cobro."; }
+        }
+        catch (HttpRequestException ex) { _error = ex.Message; }
+        finally { _guardando = false; }
+    }
+}
