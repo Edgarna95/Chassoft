@@ -19,13 +19,14 @@ namespace Chassoft.Dominio.Personas
             if (string.IsNullOrWhiteSpace(dni))
                 throw new ArgumentException("El DNI del socio es obligatorio");
 
-            if (nombreCompleto.Trim().Length > 200 || dni.Trim().Length > 20 || (email?.Trim().Length ?? 0) > 254)
+            var emailNormalizado = email?.Trim();
+            if (nombreCompleto.Trim().Length > 200 || dni.Trim().Length > 20 || (emailNormalizado?.Length ?? 0) > 254)
                 throw new ArgumentException("Los datos superan la longitud permitida.");
             NombreCompleto = nombreCompleto.Trim();
             Dni = dni.Trim();
             FechaAlta = DateTime.Today;
             Activo = true;
-            Email = string.IsNullOrWhiteSpace(email) ? null : email.Trim();
+            Email = string.IsNullOrEmpty(emailNormalizado) ? null : emailNormalizado;
         }
 
         /// <summary>Constructor de reconstitución desde base de datos.</summary>

@@ -41,6 +41,16 @@ namespace Chassoft.Tests.Dominio
             Assert.IsTrue(socio.Activo);
         }
 
+        [TestCase(null, null)]
+        [TestCase("", null)]
+        [TestCase("   ", null)]
+        [TestCase("  socio@example.test  ", "socio@example.test")]
+        public void EmailOpcional_SeNormalizaSinDesreferenciarNull(string? email, string? esperado)
+        {
+            var socio = new Socio("Socio de prueba", "12345678", email);
+            Assert.That(socio.Email, Is.EqualTo(esperado));
+        }
+
         [Test]
         public void DarDeBaja_Socio_QuedaInactivo()
         {

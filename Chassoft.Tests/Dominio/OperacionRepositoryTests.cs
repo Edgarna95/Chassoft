@@ -20,9 +20,9 @@ namespace Chassoft.Tests
 
             var operaciones = repo.ObtenerTodas().ToList();
 
-            Assert.AreEqual(2, operaciones.Count);
-            Assert.AreEqual(1000m, operaciones[0].Monto);
-            Assert.AreEqual(2000m, operaciones[1].Monto);
+            Assert.That(operaciones.Count, Is.EqualTo(2));
+            Assert.That(operaciones[0].Monto, Is.EqualTo(1000m));
+            Assert.That(operaciones[1].Monto, Is.EqualTo(2000m));
         }
     }
 }

@@ -28,8 +28,8 @@ namespace Chassoft.Tests
             var resultado = repo.ObtenerPorDni("12345678");
        
             Assert.IsNotNull(resultado);
-            Assert.AreEqual("Juan Perez", resultado.NombreCompleto);
-            Assert.AreEqual("12345678", resultado.Dni);
+            Assert.That(resultado.NombreCompleto, Is.EqualTo("Juan Perez"));
+            Assert.That(resultado.Dni, Is.EqualTo("12345678"));
             Assert.IsTrue(resultado.Activo);
         }
 

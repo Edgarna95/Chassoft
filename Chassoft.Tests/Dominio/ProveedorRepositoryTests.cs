@@ -29,8 +29,8 @@ namespace Chassoft.Tests.Dominio
 
             // Assert
             Assert.IsNotNull(resultado);
-            Assert.AreEqual("Proveedor Test", resultado.Nombre);
-            Assert.AreEqual("30-12345678-9", resultado.Cuit);
+            Assert.That(resultado.Nombre, Is.EqualTo("Proveedor Test"));
+            Assert.That(resultado.Cuit, Is.EqualTo("30-12345678-9"));
         }
 
         [Test]
