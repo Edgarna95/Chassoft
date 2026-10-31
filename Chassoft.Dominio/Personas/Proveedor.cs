@@ -5,6 +5,7 @@ namespace Chassoft.Dominio.Personas
     public class Proveedor
     {
         public int Id { get; private set; }
+        public bool Activo { get; private set; } = true;
         public string Nombre { get; private set; }
         public string Cuit { get; private set; }
         public string? RazonSocial { get; private set; }
@@ -38,13 +39,14 @@ namespace Chassoft.Dominio.Personas
 
         public Proveedor(int id, string nombre, string cuit, string? razonSocial,
             string? telefonoDeContacto, string? correoDeContacto,
-            string? condicionIVA, string? cbuAsociado)
+            string? condicionIVA, string? cbuAsociado, bool activo = true)
             : this(nombre, cuit, razonSocial, telefonoDeContacto, correoDeContacto,
                   condicionIVA, cbuAsociado)
         {
             if (id <= 0)
                 throw new ArgumentOutOfRangeException(nameof(id), "El identificador debe ser mayor a cero");
             Id = id;
+            Activo = activo;
         }
 
         private static string ValidarObligatorio(string valor, int longitudMaxima,

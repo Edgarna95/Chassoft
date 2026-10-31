@@ -28,16 +28,17 @@ public class RegresionesPersistenciaTests
     public void LecturaEgreso_ConservaFechaYProveedorCompleto()
     {
         var t = new DataTable();
-        foreach (var x in new[] { typeof(int), typeof(DateTime), typeof(decimal), typeof(int), typeof(int), typeof(int), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string) })
+        foreach (var x in new[] { typeof(int), typeof(DateTime), typeof(decimal), typeof(int), typeof(int), typeof(int), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(bool) })
             t.Columns.Add("c" + t.Columns.Count, x);
         var fecha = new DateTime(2021, 1, 5);
-        t.Rows.Add(9, fecha, 50m, 7, 1, 3, "Proveedor", "123", "Razón", DBNull.Value, "p@example.test", "IVA", "0012345678901234567890");
+        t.Rows.Add(9, fecha, 50m, 7, 1, 3, "Proveedor", "123", "Razón", DBNull.Value, "p@example.test", "IVA", "0012345678901234567890", false);
         using var reader = t.CreateDataReader(); reader.Read();
         var egreso = OperacionRepositorySqlServer.LeerEgreso(reader);
         Assert.Multiple(() => {
             Assert.That(egreso.Fecha, Is.EqualTo(fecha)); Assert.That(egreso.Proveedor.Id, Is.EqualTo(3));
             Assert.That(egreso.Proveedor.RazonSocial, Is.EqualTo("Razón")); Assert.That(egreso.Proveedor.TelefonoDeContacto, Is.Null);
             Assert.That(egreso.Proveedor.CbuAsociado, Does.StartWith("00"));
+            Assert.That(egreso.Proveedor.Activo, Is.False);
         });
     }
     [Test] public void Ingreso_TipoInexistente_SeRechaza() => Assert.Throws<ArgumentException>(() => new Ingreso(100m, 1, (TipoIngreso)99));

@@ -62,6 +62,12 @@ namespace Chassoft.Infrastructure.Repositories
                             socio.Parameters.Add("@id", SqlDbType.Int).Value = cobro.Socio.Id;
                             if ((int)socio.ExecuteScalar() != 1) throw new ArgumentException("El socio no existe o está inactivo.");
                         }
+                        if (operacion is Egreso pagoProveedor)
+                        {
+                            using var proveedor = new SqlCommand("SELECT COUNT(1) FROM Proveedores WITH (UPDLOCK,HOLDLOCK) WHERE Id=@id AND Activo=1", connection, transaction);
+                            proveedor.Parameters.Add("@id", SqlDbType.Int).Value = pagoProveedor.Proveedor.Id;
+                            if ((int)proveedor.ExecuteScalar() != 1) throw new ArgumentException("El proveedor no existe o está inactivo.");
+                        }
                         // 1. Insertar en tabla base y recuperar el Id generado
                         var cmdBase = new SqlCommand(
                             @"INSERT INTO Operaciones (Fecha, Monto, IdEmpleado, Tipo)
@@ -207,7 +213,7 @@ namespace Chassoft.Infrastructure.Repositories
             using var cmd = new SqlCommand(
                 @"SELECT o.Id, o.Fecha, o.Monto, o.IdEmpleado, e.Tipo,
                          p.Id, p.Nombre, p.Cuit, p.RazonSocial, p.TelefonoDeContacto,
-                         p.CorreoDeContacto, p.CondicionIVA, p.CbuAsociado
+                         p.CorreoDeContacto, p.CondicionIVA, p.CbuAsociado, p.Activo
                   FROM Operaciones o
                   INNER JOIN Egresos e ON e.IdOperacion = o.Id
                   INNER JOIN Proveedores p ON p.Id = e.IdProveedor", connection);
@@ -220,7 +226,7 @@ namespace Chassoft.Infrastructure.Repositories
         {
             string? Opcional(int i) => r.IsDBNull(i) ? null : r.GetString(i);
             var proveedor = new Proveedor(r.GetInt32(5), r.GetString(6), r.GetString(7),
-                Opcional(8), Opcional(9), Opcional(10), Opcional(11), Opcional(12));
+                Opcional(8), Opcional(9), Opcional(10), Opcional(11), Opcional(12), r.GetBoolean(13));
             return Egreso.Recuperar(r.GetInt32(0), r.GetDateTime(1), r.GetDecimal(2), r.GetInt32(3),
                 proveedor, (TipoEgreso)r.GetInt32(4));
         }

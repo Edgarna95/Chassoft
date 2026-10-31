@@ -53,7 +53,7 @@ else
             {
                 <div class="col-md-4"><label class="form-label" for="proveedor">Proveedor</label>
                     <select id="proveedor" class="form-select" @bind="_proveedor"><option value="0">Seleccionar proveedor</option>
-                        @foreach (var p in _proveedores) { <option value="@p.Id">@p.Nombre</option> }
+                        @foreach (var p in _proveedores.Where(p => p.Activo)) { <option value="@p.Id">@p.Nombre</option> }
                     </select>
                 </div>
                 <div class="col-md-4"><label class="form-label" for="tipo">Concepto</label>

@@ -27,6 +27,7 @@ Ejecutar en orden, revisando el destino antes de cada archivo:
 3. `002_CrearEsquemaCompleto.sql`
 4. `003_UsuariosCuotasNotificaciones.sql`
 5. `004_VincularCuotasCaja.sql`
+6. `005_CrudProveedores.sql`
 
 La versión corregida de 002 conserva Socios. Si encuentra una estructura antigua incompatible, se detiene sin borrar datos; esa base requiere una conversión específica, conservando IDs y relaciones. No se debe usar la versión anterior que eliminaba la tabla.
 
@@ -102,3 +103,13 @@ El .gitignore está preparado. En la sesión de corrección, Windows denegó esc
 Solución: Chassoft.sln. Proyectos, namespaces, ensamblados y recursos: Chassoft.*. La referencia al nombre anterior se conserva únicamente en el script de transición que necesita localizar la base existente. El historial de Git y los informes guardados fuera del proyecto se mantienen como antecedentes; no se reescribieron.
 
 El remoto de GitHub aún conserva su dirección original. No se renombró ni publicó ningún repositorio remoto; esa decisión se coordinará al confirmar la subida.
+
+## CRUD API: primera etapa
+
+Socios y Proveedores tienen consulta por ID/documento, alta, edición, baja lógica y reactivación. Los listados admiten `?activo=true` o `?activo=false`; sin filtro incluyen ambos estados. DNI/CUIT conservan su unicidad incluso en registros inactivos.
+
+**Aplicar la migración 005_CrudProveedores.sql antes de usar esta versión contra SQL.** Agrega el estado de proveedores y el índice único de CUIT, sin eliminar datos. Se detiene ante duplicados para revisión manual.
+
+Rutas, reglas, ejemplos y secuencia de prueba: `docs/Crud_API_Socios_Proveedores.md` y `Chassoft.API/Chassoft.API.http`. Esta etapa prepara los contratos para las cargas desde WinForms; el cliente HTTP de escritorio se desarrollará después.
+
+Migración 005: el usuario confirmó su ejecución en Chassoft con `Activo | bit | 0`.

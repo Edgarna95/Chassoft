@@ -13,6 +13,7 @@ namespace Chassoft.Dominio.Entidades
             : base(id, fecha, monto, idEmpleado)
         {
             if (proveedor == null) throw new ArgumentException("El egreso debe tener un proveedor.");
+            if (id == 0 && !proveedor.Activo) throw new ArgumentException("El proveedor está inactivo. Reactivalo antes de registrar un pago.");
             if (!Enum.IsDefined(typeof(TipoEgreso), tipo)) throw new ArgumentException("Tipo de egreso inválido.");
             Proveedor = proveedor; Tipo = tipo;
         }

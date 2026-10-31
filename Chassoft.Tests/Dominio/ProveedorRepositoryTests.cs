@@ -51,7 +51,7 @@ namespace Chassoft.Tests.Dominio
             repo.Agregar(proveedor1);
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() =>
+            var ex = Assert.Throws<Chassoft.Dominio.Excepciones.RegistroDuplicadoException>(() =>
                 repo.Agregar(proveedor2)
             );
 

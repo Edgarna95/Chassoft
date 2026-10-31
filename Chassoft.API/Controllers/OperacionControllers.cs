@@ -76,6 +76,7 @@ namespace Chassoft.API.Controllers
         {
             var proveedor = _proveedores.ObtenerPorId(req.IdProveedor);
             if (proveedor == null) return NotFound(new { mensaje = "Proveedor no encontrado." });
+            if (!proveedor.Activo) return Conflict(new { mensaje = "El proveedor está inactivo. Reactivalo antes de registrar un pago." });
             try
             {
                 _repo.Agregar(new Egreso(req.Monto, req.IdEmpleado, proveedor, (TipoEgreso)req.Tipo));

@@ -1,16 +1,16 @@
 using Chassoft.Dominio.Personas;
 using System.Collections.Generic;
-
 namespace Chassoft.Dominio.Repositorios
 {
     public interface ISocioRepository
     {
-        void Agregar(Socio socio);
-        void DarDeBaja(int id);
+        Socio Agregar(Socio socio);
+        bool Actualizar(Socio socio);
+        bool DarDeBaja(int id);
+        bool Reactivar(int id);
         Socio? ObtenerPorId(int id);
         Socio? ObtenerPorDni(string dni);
-        IEnumerable<Socio> ObtenerTodos();
-        /// <summary>Socios activos que no tienen pago registrado en el mes indicado.</summary>
+        IEnumerable<Socio> ObtenerTodos(bool? activo = null);
         IEnumerable<Socio> ObtenerSociosSinPago(int anio, int mes);
     }
 }

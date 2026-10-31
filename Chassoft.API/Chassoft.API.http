@@ -1,12 +1,86 @@
-@Chassoft_API_HostAddress = https://localhost:7000
+@baseUrl = https://localhost:7000
+# Cambiar estos IDs por los devueltos al crear cada registro.
+@socioId = 1
+@proveedorId = 1
 
-GET {{Chassoft_API_HostAddress}}/api/proveedor
+### Listar socios; omitir activo para incluir todos
+GET {{baseUrl}}/api/socio?activo=true
 Accept: application/json
 
-###
-GET {{Chassoft_API_HostAddress}}/api/socio
-Accept: application/json
+### Crear socio: devuelve 201, cuerpo con ID y cabecera Location
+POST {{baseUrl}}/api/socio
+Content-Type: application/json
 
-###
-GET {{Chassoft_API_HostAddress}}/api/operacion/tarifa-cuota
-Accept: application/json
+{
+  "nombreCompleto": "Socio de prueba",
+  "dni": "12345678",
+  "email": "socio@example.test"
+}
+
+### Consultar por ID
+GET {{baseUrl}}/api/socio/{{socioId}}
+
+### Buscar por DNI, incluso si está de baja
+GET {{baseUrl}}/api/socio/por-dni?dni=12345678
+
+### Editar datos; conserva fecha de alta y estado
+PUT {{baseUrl}}/api/socio/{{socioId}}
+Content-Type: application/json
+
+{
+  "nombreCompleto": "Socio editado",
+  "dni": "12345678",
+  "email": "editado@example.test"
+}
+
+### Baja lógica: NO borra datos ni pagos
+DELETE {{baseUrl}}/api/socio/{{socioId}}
+
+### Reactivar
+POST {{baseUrl}}/api/socio/{{socioId}}/reactivar
+
+### Historial de pagos, también disponible para un socio de baja
+GET {{baseUrl}}/api/socio/{{socioId}}/pagos
+
+### Proveedores: activos, inactivos o todos (sin el filtro)
+GET {{baseUrl}}/api/proveedor?activo=false
+
+### Crear proveedor
+POST {{baseUrl}}/api/proveedor
+Content-Type: application/json
+
+{
+  "nombre": "Proveedor de prueba",
+  "cuit": "30-12345678-9",
+  "razonSocial": "Razón de prueba",
+  "telefonoDeContacto": "1112345678",
+  "correoDeContacto": "proveedor@example.test",
+  "condicionIVA": "Responsable Inscripto",
+  "cbuAsociado": "0012345678901234567890"
+}
+
+### Consultar por ID
+GET {{baseUrl}}/api/proveedor/{{proveedorId}}
+
+### Buscar por CUIT
+GET {{baseUrl}}/api/proveedor/por-cuit?cuit=30-12345678-9
+
+### Editar proveedor; conserva estado
+PUT {{baseUrl}}/api/proveedor/{{proveedorId}}
+Content-Type: application/json
+
+{
+  "nombre": "Proveedor editado",
+  "cuit": "30-12345678-9",
+  "razonSocial": "Razón editada",
+  "telefonoDeContacto": "1198765432",
+  "correoDeContacto": "editado@example.test",
+  "condicionIVA": "Responsable Inscripto",
+  "cbuAsociado": "0012345678901234567890"
+}
+
+### Baja lógica de proveedor
+DELETE {{baseUrl}}/api/proveedor/{{proveedorId}}
+
+### Reactivar proveedor
+POST {{baseUrl}}/api/proveedor/{{proveedorId}}/reactivar
