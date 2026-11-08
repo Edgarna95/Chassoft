@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chassoft.Infrastructure", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chassoft.API", "..\Chassoft.API\Chassoft.API.csproj", "{D1058BAB-4E34-4918-9F31-7FD239720D8C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chassoft.Web", "..\Chassoft.Web\Chassoft.Web.csproj", "{B57457BB-AC33-40D2-96DE-69244E51DB90}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,10 @@ Global
 		{D1058BAB-4E34-4918-9F31-7FD239720D8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1058BAB-4E34-4918-9F31-7FD239720D8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1058BAB-4E34-4918-9F31-7FD239720D8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B57457BB-AC33-40D2-96DE-69244E51DB90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B57457BB-AC33-40D2-96DE-69244E51DB90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B57457BB-AC33-40D2-96DE-69244E51DB90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B57457BB-AC33-40D2-96DE-69244E51DB90}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
